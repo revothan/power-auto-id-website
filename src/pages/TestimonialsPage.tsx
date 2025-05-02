@@ -1,29 +1,22 @@
-import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { getTestimonials } from '@/lib/supabase/client'
-import { Testimonial } from '@/types/supabase'
 import { Button } from '@/components/ui/button'
+import TestimonialImageGrid from '@/components/testimonials/TestimonialImageGrid'
+
+// Testimonial image URLs
+const testimonialImages = [
+  "https://cfwrwtgwdljhdqgpwzip.supabase.co/storage/v1/object/public/testimonial-images//testimonial1.png",
+  "https://cfwrwtgwdljhdqgpwzip.supabase.co/storage/v1/object/public/testimonial-images//testimonial2.png",
+  "https://cfwrwtgwdljhdqgpwzip.supabase.co/storage/v1/object/public/testimonial-images//testimonial3.png",
+  "https://cfwrwtgwdljhdqgpwzip.supabase.co/storage/v1/object/public/testimonial-images//testimonial4.png",
+  "https://cfwrwtgwdljhdqgpwzip.supabase.co/storage/v1/object/public/testimonial-images//testimonial5.png",
+  "https://cfwrwtgwdljhdqgpwzip.supabase.co/storage/v1/object/public/testimonial-images//testimonial6.png",
+  "https://cfwrwtgwdljhdqgpwzip.supabase.co/storage/v1/object/public/testimonial-images//testimonial7.png",
+  "https://cfwrwtgwdljhdqgpwzip.supabase.co/storage/v1/object/public/testimonial-images//testimonial8.png",
+  "https://cfwrwtgwdljhdqgpwzip.supabase.co/storage/v1/object/public/testimonial-images//testimonial9.png",
+  "https://cfwrwtgwdljhdqgpwzip.supabase.co/storage/v1/object/public/testimonial-images//testimonial10.png"
+]
 
 export default function TestimonialsPage() {
-  const [testimonials, setTestimonials] = useState<Testimonial[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    const fetchTestimonials = async () => {
-      try {
-        setIsLoading(true)
-        const data = await getTestimonials(100) // Fetch all testimonials (up to 100)
-        setTestimonials(data || [])
-      } catch (error) {
-        console.error('Error fetching testimonials:', error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchTestimonials()
-  }, [])
-
   return (
     <div className="bg-white">
       {/* Hero section */}
@@ -50,94 +43,7 @@ export default function TestimonialsPage() {
       {/* Testimonials grid */}
       <section className="py-12 sm:py-16 lg:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          {isLoading ? (
-            <div className="flex h-96 w-full items-center justify-center">
-              <div className="h-16 w-16 animate-spin rounded-full border-b-2 border-t-2 border-primary"></div>
-            </div>
-          ) : testimonials.length > 0 ? (
-            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-              {testimonials.map((testimonial) => (
-                <div
-                  key={testimonial.id}
-                  className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md"
-                >
-                  <div className="mb-4 flex">
-                    {/* Star Rating */}
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <svg
-                        key={i}
-                        className={`h-5 w-5 ${
-                          i < testimonial.rating ? 'text-yellow-400' : 'text-gray-300'
-                        }`}
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M10 15.934L4.618 19 5.764 12.82 1 8.585l6.364-.545L10 3l2.636 5.04 6.364.545-4.764 4.235 1.146 6.18L10 15.934z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    ))}
-                  </div>
-                  
-                  <p className="mb-6 text-gray-700">"{testimonial.content}"</p>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      {testimonial.image ? (
-                        <img
-                          src={testimonial.image}
-                          alt={testimonial.customer_name}
-                          className="mr-4 h-10 w-10 rounded-full object-cover"
-                        />
-                      ) : (
-                        <div className="mr-4 flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white">
-                          {testimonial.customer_name
-                            .split(' ')
-                            .map((n) => n[0])
-                            .join('')
-                            .toUpperCase()
-                            .substring(0, 2)}
-                        </div>
-                      )}
-                      <div>
-                        <h4 className="font-semibold">{testimonial.customer_name}</h4>
-                        <p className="text-sm text-gray-500">{testimonial.customer_location}</p>
-                      </div>
-                    </div>
-                    
-                    {testimonial.car_id && (
-                      <Button asChild variant="outline" size="sm">
-                        <Link to={`/cars/${testimonial.car_id}`}>Lihat Mobil</Link>
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="flex h-96 w-full flex-col items-center justify-center rounded-lg border border-gray-200 bg-white p-8 text-center">
-              <svg
-                className="mb-4 h-12 w-12 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              <h3 className="mb-2 text-lg font-medium">Tidak ada testimonial</h3>
-              <p className="text-gray-600">
-                Belum ada testimonial dari pelanggan saat ini.
-              </p>
-            </div>
-          )}
+          <TestimonialImageGrid testimonialImages={testimonialImages} />
         </div>
       </section>
 
