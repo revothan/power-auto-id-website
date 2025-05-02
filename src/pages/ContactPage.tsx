@@ -135,10 +135,30 @@ export default function ContactPage() {
                   <div className="ml-4">
                     <h3 className="text-lg font-medium text-gray-900">Alamat</h3>
                     <p className="mt-1 text-gray-600">
-                      Ocean Park BSD City Unit FC10 - FC11,<br />
-                      Jl. Pahlawan Seribu, Lengkong Gudang Tim.,<br />
-                      Kec. Serpong, Kota Tangerang Selatan, Banten 15310
+                      <a 
+                        href="https://g.co/kgs/XEB7qqU" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="hover:text-primary"
+                      >
+                        Ocean Park BSD City Unit FC10 - FC11,<br />
+                        Jl. Pahlawan Seribu, Lengkong Gudang Tim.,<br />
+                        Kec. Serpong, Kota Tangerang Selatan, Banten 15310
+                      </a>
                     </p>
+                    <div className="mt-2">
+                      <Button asChild variant="outline" size="sm">
+                        <a 
+                          href="https://g.co/kgs/XEB7qqU" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2"
+                        >
+                          <MapPin className="h-4 w-4" />
+                          Buka di Google Maps
+                        </a>
+                      </Button>
+                    </div>
                   </div>
                 </div>
                 
@@ -275,6 +295,19 @@ export default function ContactPage() {
               referrerPolicy="no-referrer-when-downgrade"
               title="Power Auto ID Location"
             />
+          </div>
+          <div className="mt-4 flex justify-center">
+            <Button asChild size="lg">
+              <a 
+                href="https://g.co/kgs/XEB7qqU" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center gap-2"
+              >
+                <MapPin className="h-5 w-5" />
+                Buka di Google Maps
+              </a>
+            </Button>
           </div>
         </div>
       </section>
