@@ -1,14 +1,23 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Car as CarIcon, Gauge, Award, ShieldCheck, Check } from 'lucide-react'
-import { getCars, getTestimonials } from '@/lib/supabase/client'
-import { Car as CarType, Testimonial } from '@/types/supabase'
+import { Car as CarIcon, Gauge, Award, ShieldCheck } from 'lucide-react'
+import { getCars } from '@/lib/supabase/client'
+import { Car as CarType } from '@/types/supabase'
 import { Button } from '@/components/ui/button'
 import CarCard from '@/components/cars/CarCard'
+import TestimonialCarousel from '@/components/testimonials/TestimonialCarousel'
+
+// Testimonial image URLs
+const testimonialImages = [
+  "https://cfwrwtgwdljhdqgpwzip.supabase.co/storage/v1/object/public/testimonial-images//testimonial1.png",
+  "https://cfwrwtgwdljhdqgpwzip.supabase.co/storage/v1/object/public/testimonial-images//testimonial2.png",
+  "https://cfwrwtgwdljhdqgpwzip.supabase.co/storage/v1/object/public/testimonial-images//testimonial3.png",
+  "https://cfwrwtgwdljhdqgpwzip.supabase.co/storage/v1/object/public/testimonial-images//testimonial4.png",
+  "https://cfwrwtgwdljhdqgpwzip.supabase.co/storage/v1/object/public/testimonial-images//testimonial5.png"
+]
 
 export default function HomePage() {
   const [featuredCars, setFeaturedCars] = useState<CarType[]>([])
-  const [testimonials, setTestimonials] = useState<Testimonial[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -16,12 +25,10 @@ export default function HomePage() {
       try {
         setIsLoading(true)
         
-        // Fetch featured cars and testimonials
+        // Fetch featured cars
         const { data: carsData } = await getCars(6, 0, { sold: false })
-        const testimonialsData = await getTestimonials(3)
         
         setFeaturedCars(carsData || [])
-        setTestimonials(testimonialsData || [])
       } catch (error) {
         console.error('Error fetching initial data:', error)
       } finally {
@@ -164,7 +171,7 @@ export default function HomePage() {
       {/* Testimonials Section */}
       <section className="bg-white py-12 sm:py-16 lg:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
+          <div className="text-center mb-12">
             <h2 className="text-3xl font-bold tracking-tight text-gray-900">
               Apa Kata Pelanggan Kami
             </h2>
@@ -178,66 +185,13 @@ export default function HomePage() {
               <div className="h-16 w-16 animate-spin rounded-full border-b-2 border-t-2 border-primary"></div>
             </div>
           ) : (
-            <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {testimonials.map((testimonial) => (
-                <div 
-                  key={testimonial.id} 
-                  className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md"
-                >
-                  <div className="mb-4 flex">
-                    {/* Star Rating */}
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <svg
-                        key={i}
-                        className={`h-5 w-5 ${
-                          i < testimonial.rating ? 'text-yellow-400' : 'text-gray-300'
-                        }`}
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M10 15.934L4.618 19 5.764 12.82 1 8.585l6.364-.545L10 3l2.636 5.04 6.364.545-4.764 4.235 1.146 6.18L10 15.934z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    ))}
-                  </div>
-
-                  <p className="mb-4 text-gray-700">"{testimonial.content}"</p>
-
-                  <div className="flex items-center">
-                    {testimonial.image ? (
-                      <img
-                        src={testimonial.image}
-                        alt={testimonial.customer_name}
-                        className="mr-4 h-10 w-10 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="mr-4 flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white">
-                        {testimonial.customer_name
-                          .split(' ')
-                          .map((n) => n[0])
-                          .join('')
-                          .toUpperCase()
-                          .substring(0, 2)}
-                      </div>
-                    )}
-                    <div>
-                      <h4 className="font-semibold">{testimonial.customer_name}</h4>
-                      <p className="text-sm text-gray-500">{testimonial.customer_location}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
+            <div className="mt-12">
+              <TestimonialCarousel 
+                testimonialImages={testimonialImages.slice(0, 5)} 
+                withCTA={true}
+              />
             </div>
           )}
-
-          <div className="mt-12 text-center">
-            <Button asChild variant="outline">
-              <Link to="/testimonials">Lihat Semua Testimonial</Link>
-            </Button>
-          </div>
         </div>
       </section>
 
