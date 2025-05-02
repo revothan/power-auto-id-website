@@ -1,13 +1,26 @@
 import { createClient } from '@supabase/supabase-js'
 import { Database } from '@/types/supabase'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string
+// Get environment variables with fallbacks
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string || ''
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string || ''
 
-export const supabase = createClient<Database>(
-  supabaseUrl,
-  supabaseAnonKey
-)
+// Check if environment variables are available
+const isSupabaseConfigured = supabaseUrl && supabaseAnonKey
+
+// Create client only if properly configured
+export const supabase = isSupabaseConfigured 
+  ? createClient<Database>(supabaseUrl, supabaseAnonKey)
+  : null
+
+// Helper function to check if Supabase is configured
+export const checkSupabaseConnection = () => {
+  if (!isSupabaseConfigured) {
+    console.error('Supabase configuration is missing. Make sure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set.')
+    return false
+  }
+  return true
+}
 
 export async function getCars(
   limit = 10,
@@ -16,7 +29,11 @@ export async function getCars(
   sortBy: string = 'created_at',
   sortOrder: 'asc' | 'desc' = 'desc'
 ) {
-  let query = supabase
+  if (!checkSupabaseConnection()) {
+    return { data: [], count: 0, totalPages: 0 }
+  }
+
+  let query = supabase!
     .from('cars')
     .select('*', { count: 'exact' })
     .order(sortBy, { ascending: sortOrder === 'asc' })
@@ -42,100 +59,150 @@ export async function getCars(
     }
   })
 
-  const { data, error, count } = await query
+  try {
+    const { data, error, count } = await query
 
-  if (error) {
+    if (error) {
+      console.error('Error fetching cars:', error)
+      return { data: [], count: 0, totalPages: 0 }
+    }
+
+    return { 
+      data: data || [], 
+      count: count || 0, 
+      totalPages: count ? Math.ceil(count / limit) : 0 
+    }
+  } catch (error) {
     console.error('Error fetching cars:', error)
-    throw error
-  }
-
-  return { 
-    data, 
-    count: count || 0, 
-    totalPages: count ? Math.ceil(count / limit) : 0 
+    return { data: [], count: 0, totalPages: 0 }
   }
 }
 
 export async function getCarById(id: string) {
-  const { data, error } = await supabase
-    .from('cars')
-    .select('*')
-    .eq('id', id)
-    .single()
-
-  if (error) {
-    console.error('Error fetching car:', error)
-    throw error
+  if (!checkSupabaseConnection()) {
+    return null
   }
 
-  return data
+  try {
+    const { data, error } = await supabase!
+      .from('cars')
+      .select('*')
+      .eq('id', id)
+      .single()
+
+    if (error) {
+      console.error('Error fetching car:', error)
+      return null
+    }
+
+    return data
+  } catch (error) {
+    console.error('Error fetching car:', error)
+    return null
+  }
 }
 
 export async function getTestimonials(limit = 10) {
-  const { data, error } = await supabase
-    .from('testimonials')
-    .select('*')
-    .order('created_at', { ascending: false })
-    .limit(limit)
-
-  if (error) {
-    console.error('Error fetching testimonials:', error)
-    throw error
+  if (!checkSupabaseConnection()) {
+    return []
   }
 
-  return data
+  try {
+    const { data, error } = await supabase!
+      .from('testimonials')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(limit)
+
+    if (error) {
+      console.error('Error fetching testimonials:', error)
+      return []
+    }
+
+    return data || []
+  } catch (error) {
+    console.error('Error fetching testimonials:', error)
+    return []
+  }
 }
 
 export async function getCarMakes() {
-  const { data, error } = await supabase
-    .from('cars')
-    .select('make')
-    .order('make')
-
-  if (error) {
-    console.error('Error fetching car makes:', error)
-    throw error
+  if (!checkSupabaseConnection()) {
+    return []
   }
 
-  // Get unique makes
-  const uniqueMakes = [...new Set(data.map(car => car.make))]
-  return uniqueMakes
+  try {
+    const { data, error } = await supabase!
+      .from('cars')
+      .select('make')
+      .order('make')
+
+    if (error) {
+      console.error('Error fetching car makes:', error)
+      return []
+    }
+
+    // Get unique makes
+    const uniqueMakes = [...new Set(data.map(car => car.make))]
+    return uniqueMakes
+  } catch (error) {
+    console.error('Error fetching car makes:', error)
+    return []
+  }
 }
 
 export async function getCarModels(make?: string) {
-  let query = supabase
-    .from('cars')
-    .select('model')
-    .order('model')
-
-  if (make) {
-    query = query.eq('make', make)
+  if (!checkSupabaseConnection()) {
+    return []
   }
 
-  const { data, error } = await query
+  try {
+    let query = supabase!
+      .from('cars')
+      .select('model')
+      .order('model')
 
-  if (error) {
+    if (make) {
+      query = query.eq('make', make)
+    }
+
+    const { data, error } = await query
+
+    if (error) {
+      console.error('Error fetching car models:', error)
+      return []
+    }
+
+    // Get unique models
+    const uniqueModels = [...new Set(data.map(car => car.model))]
+    return uniqueModels
+  } catch (error) {
     console.error('Error fetching car models:', error)
-    throw error
+    return []
   }
-
-  // Get unique models
-  const uniqueModels = [...new Set(data.map(car => car.model))]
-  return uniqueModels
 }
 
 export async function getCarYears() {
-  const { data, error } = await supabase
-    .from('cars')
-    .select('year')
-    .order('year', { ascending: false })
-
-  if (error) {
-    console.error('Error fetching car years:', error)
-    throw error
+  if (!checkSupabaseConnection()) {
+    return []
   }
 
-  // Get unique years
-  const uniqueYears = [...new Set(data.map(car => car.year))]
-  return uniqueYears
+  try {
+    const { data, error } = await supabase!
+      .from('cars')
+      .select('year')
+      .order('year', { ascending: false })
+
+    if (error) {
+      console.error('Error fetching car years:', error)
+      return []
+    }
+
+    // Get unique years
+    const uniqueYears = [...new Set(data.map(car => car.year))]
+    return uniqueYears
+  } catch (error) {
+    console.error('Error fetching car years:', error)
+    return []
+  }
 }
