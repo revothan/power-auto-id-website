@@ -94,7 +94,10 @@ export default function CarCard({ car }: CarCardProps) {
             Detail
           </Link>
         </Button>
-        <Button asChild variant="secondary" className="flex-1">
+        <Button 
+          asChild 
+          className="flex-1 bg-green-600 hover:bg-green-700"
+        >
           <a href={`https://wa.me/628119288855?text=Halo,%20saya%20tertarik%20dengan%20${car.year}%20${car.make}%20${car.model}`} target="_blank" rel="noopener noreferrer">
             WhatsApp
           </a>
