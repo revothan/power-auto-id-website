@@ -170,7 +170,7 @@ export default function CarListingPage() {
             ) : (
               <div className="flex h-96 w-full flex-col items-center justify-center rounded-lg border border-gray-200 bg-white p-8 text-center">
                 <div className="mb-4 rounded-full bg-gray-100 p-3">
-                  <CarCard className="h-10 w-10 text-gray-400" />
+                  <Filter className="h-10 w-10 text-gray-400" />
                 </div>
                 <h3 className="mb-2 text-lg font-medium">Tidak ada mobil yang ditemukan</h3>
                 <p className="text-gray-600">
