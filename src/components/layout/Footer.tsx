@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { MapPin, Phone, Clock, Instagram, Facebook, Mail } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 const navigation = {
   main: [
@@ -43,9 +44,14 @@ export default function Footer() {
             <div className="flex flex-col space-y-4 text-base text-gray-300">
               <div className="flex items-start">
                 <MapPin className="mr-2 h-5 w-5 shrink-0 text-primary" />
-                <span>
+                <a 
+                  href="https://g.co/kgs/XEB7qqU" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="hover:text-primary"
+                >
                   Ocean Park BSD City Unit FC10 - FC11, Jl. Pahlawan Seribu, Lengkong Gudang Tim., Kec. Serpong, Kota Tangerang Selatan, Banten 15310
-                </span>
+                </a>
               </div>
               <div className="flex items-center">
                 <Phone className="mr-2 h-5 w-5 shrink-0 text-primary" />
@@ -65,6 +71,19 @@ export default function Footer() {
                   <p>Senin - Minggu</p>
                   <p>8.00 am–5.00 pm</p>
                 </div>
+              </div>
+              <div className="pt-2">
+                <Button asChild variant="outline" size="sm" className="w-full">
+                  <a 
+                    href="https://g.co/kgs/XEB7qqU" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2"
+                  >
+                    <MapPin className="h-4 w-4" />
+                    Buka di Google Maps
+                  </a>
+                </Button>
               </div>
             </div>
           </div>
