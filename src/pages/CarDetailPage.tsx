@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
-import { getCarById, getCars } from '@/lib/supabase/client'
+import { getCars } from '@/lib/supabase/client'
 import { Car } from '@/types/supabase'
 import { formatCurrency } from '@/lib/utils'
 import { ArrowLeft } from 'lucide-react'
