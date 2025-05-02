@@ -114,7 +114,178 @@ export default function CarFilter() {
       <h2 className="mb-4 text-lg font-semibold">Filter Mobil</h2>
       
       <form onSubmit={handleSubmit}>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {/* Desktop layout (3 columns with consistent sizing) */}
+        <div className="hidden lg:grid lg:grid-cols-3 lg:gap-6">
+          <div className="space-y-4">
+            {/* Make */}
+            <div>
+              <label htmlFor="make-desktop" className="block text-sm font-medium">
+                Merek
+              </label>
+              <select
+                id="make-desktop"
+                name="make"
+                value={filters.make}
+                onChange={handleMakeChange}
+                className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm shadow-sm focus:border-primary focus:outline-none"
+              >
+                <option value="">Semua Merek</option>
+                {makes.map((make) => (
+                  <option key={make} value={make}>
+                    {make}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Model */}
+            <div>
+              <label htmlFor="model-desktop" className="block text-sm font-medium">
+                Model
+              </label>
+              <select
+                id="model-desktop"
+                name="model"
+                value={filters.model}
+                onChange={handleChange}
+                disabled={!filters.make}
+                className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm shadow-sm focus:border-primary focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option value="">Semua Model</option>
+                {models.map((model) => (
+                  <option key={model} value={model}>
+                    {model}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Transmission */}
+            <div>
+              <label htmlFor="transmission-desktop" className="block text-sm font-medium">
+                Transmisi
+              </label>
+              <select
+                id="transmission-desktop"
+                name="transmission"
+                value={filters.transmission}
+                onChange={handleChange}
+                className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm shadow-sm focus:border-primary focus:outline-none"
+              >
+                <option value="">Semua Transmisi</option>
+                <option value="automatic">Otomatis</option>
+                <option value="manual">Manual</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            {/* Year Range */}
+            <div>
+              <label className="block text-sm font-medium">
+                Tahun
+              </label>
+              <div className="mt-1 flex items-center gap-2">
+                <select
+                  id="yearMin-desktop"
+                  name="yearMin"
+                  value={filters.yearMin}
+                  onChange={handleChange}
+                  className="block w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm shadow-sm focus:border-primary focus:outline-none"
+                >
+                  <option value="">Min</option>
+                  {years.map((year) => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  ))}
+                </select>
+                <span className="text-gray-500">-</span>
+                <select
+                  id="yearMax-desktop"
+                  name="yearMax"
+                  value={filters.yearMax}
+                  onChange={handleChange}
+                  className="block w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm shadow-sm focus:border-primary focus:outline-none"
+                >
+                  <option value="">Max</option>
+                  {years.map((year) => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Price Range */}
+            <div>
+              <label className="block text-sm font-medium">
+                Harga
+              </label>
+              <div className="mt-1 flex items-center gap-2">
+                <input
+                  type="number"
+                  id="priceMin-desktop"
+                  name="priceMin"
+                  value={filters.priceMin}
+                  onChange={handleChange}
+                  placeholder="Rp Min"
+                  className="block w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm shadow-sm focus:border-primary focus:outline-none"
+                />
+                <span className="text-gray-500">-</span>
+                <input
+                  type="number"
+                  id="priceMax-desktop"
+                  name="priceMax"
+                  value={filters.priceMax}
+                  onChange={handleChange}
+                  placeholder="Rp Max"
+                  className="block w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm shadow-sm focus:border-primary focus:outline-none"
+                />
+              </div>
+            </div>
+
+            {/* Fuel Type */}
+            <div>
+              <label htmlFor="fuelType-desktop" className="block text-sm font-medium">
+                Bahan Bakar
+              </label>
+              <select
+                id="fuelType-desktop"
+                name="fuelType"
+                value={filters.fuelType}
+                onChange={handleChange}
+                className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm shadow-sm focus:border-primary focus:outline-none"
+              >
+                <option value="">Semua Bahan Bakar</option>
+                <option value="gasoline">Bensin</option>
+                <option value="diesel">Solar</option>
+                <option value="electric">Listrik</option>
+                <option value="hybrid">Hybrid</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="flex flex-col justify-end">
+            <div className="mt-2 flex flex-col gap-3">
+              <Button type="submit" className="w-full">
+                Cari Mobil
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleReset}
+                className="w-full"
+              >
+                Reset Filter
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile layout (stacked) */}
+        <div className="grid grid-cols-1 gap-4 lg:hidden md:grid-cols-2">
           {/* Make */}
           <div>
             <label htmlFor="make" className="block text-sm font-medium">
@@ -269,20 +440,20 @@ export default function CarFilter() {
               <option value="hybrid">Hybrid</option>
             </select>
           </div>
-        </div>
 
-        <div className="mt-6 flex flex-col gap-2 sm:flex-row">
-          <Button type="submit" className="flex-1">
-            Cari Mobil
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleReset}
-            className="flex-1"
-          >
-            Reset Filter
-          </Button>
+          <div className="md:col-span-2 mt-4 flex flex-col gap-2 sm:flex-row">
+            <Button type="submit" className="flex-1">
+              Cari Mobil
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleReset}
+              className="flex-1"
+            >
+              Reset Filter
+            </Button>
+          </div>
         </div>
       </form>
     </div>
