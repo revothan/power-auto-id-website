@@ -136,7 +136,7 @@ export default function ContactPage() {
                     <h3 className="text-lg font-medium text-gray-900">Alamat</h3>
                     <p className="mt-1 text-gray-600">
                       <a 
-                        href="https://g.co/kgs/XEB7qqU" 
+                        href="https://maps.app.goo.gl/MrarwqXy3gih1T396" 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="hover:text-primary"
@@ -149,7 +149,7 @@ export default function ContactPage() {
                     <div className="mt-2">
                       <Button asChild variant="outline" size="sm">
                         <a 
-                          href="https://g.co/kgs/XEB7qqU" 
+                          href="https://maps.app.goo.gl/MrarwqXy3gih1T396" 
                           target="_blank" 
                           rel="noopener noreferrer"
                           className="flex items-center gap-2"
@@ -299,7 +299,7 @@ export default function ContactPage() {
           <div className="mt-4 flex justify-center">
             <Button asChild size="lg">
               <a 
-                href="https://g.co/kgs/XEB7qqU" 
+                href="https://maps.app.goo.gl/MrarwqXy3gih1T396" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="flex items-center gap-2"
