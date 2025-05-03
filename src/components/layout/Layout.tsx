@@ -2,6 +2,7 @@ import { ReactNode } from 'react'
 import { Helmet } from 'react-helmet-async'
 import Header from './Header'
 import Footer from './Footer'
+import WhatsAppButton from '../common/WhatsAppButton'
 
 interface LayoutProps {
   children: ReactNode
@@ -41,6 +42,7 @@ export default function Layout({
           {children}
         </main>
         <Footer />
+        <WhatsAppButton />
       </div>
     </>
   )
