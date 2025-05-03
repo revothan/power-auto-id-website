@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { MapPin, Phone, Clock, Instagram, Facebook, Mail } from 'lucide-react'
+import { MapPin, Phone, Clock, Instagram, Facebook, Mail, Youtube } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 const navigation = {
@@ -13,13 +13,18 @@ const navigation = {
   social: [
     {
       name: 'Instagram',
-      href: 'https://www.instagram.com/powerautoid/',
+      href: 'https://www.instagram.com/powerauto.id/',
       icon: Instagram,
     },
     {
       name: 'Facebook',
-      href: 'https://www.facebook.com/powerautoid',
+      href: 'https://www.facebook.com/profile.php?id=100028005073442&mibextid=ZbWKwL',
       icon: Facebook,
+    },
+    {
+      name: 'Youtube',
+      href: 'https://www.youtube.com/c/PowerAutoTV',
+      icon: Youtube,
     },
   ],
 }
@@ -61,8 +66,8 @@ export default function Footer() {
               </div>
               <div className="flex items-center">
                 <Mail className="mr-2 h-5 w-5 shrink-0 text-primary" />
-                <a href="mailto:info@powerautoid.com" className="hover:text-primary">
-                  info@powerautoid.com
+                <a href="mailto:powerauto.id@gmail.com" className="hover:text-primary">
+                  powerauto.id@gmail.com
                 </a>
               </div>
               <div className="flex items-start">
