@@ -206,7 +206,7 @@ export default function HomePage() {
               Kunjungi showroom kami atau hubungi kami untuk penawaran terbaik dan informasi lebih lanjut.
             </p>
             <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
-              <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary">
+              <Button asChild size="lg" variant="outline" className="border-white bg-transparent text-white hover:bg-white hover:text-primary focus:ring-white">
                 <Link to="/cars">Lihat Semua Mobil</Link>
               </Button>
               <Button asChild size="lg" className="bg-white text-primary hover:bg-gray-100">
