@@ -45,7 +45,7 @@ export default function Footer() {
               <div className="flex items-start">
                 <MapPin className="mr-2 h-5 w-5 shrink-0 text-primary" />
                 <a 
-                  href="https://g.co/kgs/XEB7qqU" 
+                  href="https://maps.app.goo.gl/MrarwqXy3gih1T396" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="hover:text-primary"
@@ -75,7 +75,7 @@ export default function Footer() {
               <div className="pt-2">
                 <Button asChild variant="outline" size="sm" className="w-full">
                   <a 
-                    href="https://g.co/kgs/XEB7qqU" 
+                    href="https://maps.app.goo.gl/MrarwqXy3gih1T396" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="flex items-center justify-center gap-2"
