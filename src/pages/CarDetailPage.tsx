@@ -7,8 +7,7 @@ import { formatCurrency } from '@/lib/utils'
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import CarImageGallery from '@/components/cars/CarImageGallery'
-import CarSpecifications from '@/components/cars/CarSpecifications'
-import CarFeatures from '@/components/cars/CarFeatures'
+import CarBenefits from '@/components/cars/CarBenefits'
 import PriceComparisonWidget from '@/components/cars/PriceComparisonWidget'
 import CarCallToAction from '@/components/cars/CarCallToAction'
 import CarCard from '@/components/cars/CarCard'
@@ -155,14 +154,9 @@ export default function CarDetailPage() {
                 </div>
               </div>
 
-              {/* Car features */}
+              {/* Car benefits */}
               <div className="mt-8">
-                <CarFeatures features={car.features} />
-              </div>
-
-              {/* Car specifications */}
-              <div className="mt-8">
-                <CarSpecifications car={car} />
+                <CarBenefits />
               </div>
             </div>
 
