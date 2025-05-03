@@ -1,14 +1,83 @@
 import { useState, useEffect } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { optimizeImage } from '@/lib/image-utils'
 
 interface CarImageGalleryProps {
   images: string[]
   title: string
 }
 
+interface OptimizedImage {
+  thumbnail: string
+  full: string
+  original: string
+}
+
 export default function CarImageGallery({ images, title }: CarImageGalleryProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [optimizedImages, setOptimizedImages] = useState<OptimizedImage[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set([0])) // Track loaded images
+
+  // Optimize images on component mount
+  useEffect(() => {
+    if (images && images.length > 0) {
+      const optimized = images.map(img => ({
+        thumbnail: optimizeImage(img, 200, 150, 80),
+        full: optimizeImage(img, 1024, 768, 85),
+        original: img
+      }))
+      
+      setOptimizedImages(optimized)
+      
+      // Preload the first image
+      const firstImg = new Image()
+      firstImg.onload = () => {
+        setIsLoading(false)
+        setLoadedImages(prev => new Set(prev).add(0))
+      }
+      firstImg.src = optimized[0].full
+      
+      // Preload the next few images in the background
+      const preloadNextImages = async () => {
+        for (let i = 1; i < Math.min(3, optimized.length); i++) {
+          const img = new Image()
+          img.onload = () => {
+            setLoadedImages(prev => new Set(prev).add(i))
+          }
+          img.src = optimized[i].full
+        }
+      }
+      
+      preloadNextImages()
+    }
+  }, [images])
+
+  // Preload next image when current index changes
+  useEffect(() => {
+    if (optimizedImages.length === 0) return
+    
+    // Preload the next image
+    const nextIndex = (currentIndex + 1) % optimizedImages.length
+    if (!loadedImages.has(nextIndex)) {
+      const img = new Image()
+      img.onload = () => {
+        setLoadedImages(prev => new Set(prev).add(nextIndex))
+      }
+      img.src = optimizedImages[nextIndex].full
+    }
+    
+    // Also preload the previous image
+    const prevIndex = currentIndex === 0 ? optimizedImages.length - 1 : currentIndex - 1
+    if (!loadedImages.has(prevIndex)) {
+      const img = new Image()
+      img.onload = () => {
+        setLoadedImages(prev => new Set(prev).add(prevIndex))
+      }
+      img.src = optimizedImages[prevIndex].full
+    }
+  }, [currentIndex, optimizedImages, loadedImages])
 
   // Handle keyboard navigation
   useEffect(() => {
@@ -67,12 +136,18 @@ export default function CarImageGallery({ images, title }: CarImageGalleryProps)
     <>
       {/* Main image */}
       <div className="relative mb-2 overflow-hidden rounded-lg">
-        <img
-          src={images[currentIndex]}
-          alt={`${title} - Gambar ${currentIndex + 1}`}
-          className="aspect-[4/3] w-full cursor-pointer object-cover"
-          onClick={() => setIsFullscreen(true)}
-        />
+        {isLoading || !loadedImages.has(currentIndex) ? (
+          <div className="aspect-[4/3] w-full flex items-center justify-center bg-gray-100">
+            <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-t-2 border-primary"></div>
+          </div>
+        ) : (
+          <img
+            src={optimizedImages[currentIndex]?.full || images[currentIndex]}
+            alt={`${title} - Gambar ${currentIndex + 1}`}
+            className="aspect-[4/3] w-full cursor-pointer object-cover"
+            onClick={() => setIsFullscreen(true)}
+          />
+        )}
         
         {/* Navigation controls */}
         <button
@@ -107,7 +182,7 @@ export default function CarImageGallery({ images, title }: CarImageGalleryProps)
       
       {/* Thumbnails */}
       <div className="flex w-full gap-2 overflow-x-auto pb-2">
-        {images.map((image, index) => (
+        {optimizedImages.map((image, index) => (
           <div
             key={index}
             className={`relative aspect-[4/3] w-20 flex-none cursor-pointer overflow-hidden rounded-md border-2 ${
@@ -116,9 +191,10 @@ export default function CarImageGallery({ images, title }: CarImageGalleryProps)
             onClick={() => selectThumbnail(index)}
           >
             <img
-              src={image}
+              src={image.thumbnail}
               alt={`${title} - Thumbnail ${index + 1}`}
               className="h-full w-full object-cover"
+              loading="lazy"
             />
           </div>
         ))}
@@ -143,7 +219,7 @@ export default function CarImageGallery({ images, title }: CarImageGalleryProps)
           </button>
           
           <img
-            src={images[currentIndex]}
+            src={optimizedImages[currentIndex]?.original || images[currentIndex]}
             alt={`${title} - Gambar ${currentIndex + 1}`}
             className="max-h-[90vh] max-w-[90vw] object-contain"
             onClick={(e) => e.stopPropagation()}
