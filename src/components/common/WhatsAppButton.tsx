@@ -11,9 +11,9 @@ export default function WhatsAppButton() {
   const [isOpen, setIsOpen] = useState(false)
 
   const contacts: ContactPerson[] = [
-    { name: 'Jimmy', number: '+62 811-9288-855' },
+    { name: 'Alfi', number: '+62 811-8297-666' },
     { name: 'Audy', number: '+62 882-9946-8838' },
-    { name: 'Alfi', number: '+62 811-8297-666' }
+    { name: 'Jimmy', number: '+62 811-9288-855' }
   ]
 
   const handleContactClick = (number: string) => {
