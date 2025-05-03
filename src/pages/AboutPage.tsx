@@ -1,8 +1,15 @@
 import { Link } from 'react-router-dom'
 import { ShieldCheck, Award, ThumbsUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { optimizeImage } from '@/lib/image-utils'
 
 export default function AboutPage() {
+  // Optimize image URLs for better loading performance
+  const showroomImage1 = optimizeImage("https://cfwrwtgwdljhdqgpwzip.supabase.co/storage/v1/object/public/branding//showroom1.jpg", 800, 600)
+  const showroomImage2 = optimizeImage("https://cfwrwtgwdljhdqgpwzip.supabase.co/storage/v1/object/public/branding//showroom2.jpg", 800, 600)
+  const showroomImage3 = optimizeImage("https://cfwrwtgwdljhdqgpwzip.supabase.co/storage/v1/object/public/branding//showroom3.jpg", 800, 600)
+  const showroomImage4 = optimizeImage("https://cfwrwtgwdljhdqgpwzip.supabase.co/storage/v1/object/public/branding//showroom4.jpg", 800, 600)
+
   return (
     <div className="bg-white">
       {/* Hero section */}
@@ -54,7 +61,7 @@ export default function AboutPage() {
             
             <div className="relative rounded-lg overflow-hidden">
               <img
-                src="https://images.unsplash.com/photo-1551522435-a13afa10f103?auto=format&fit=crop&q=80"
+                src={showroomImage1}
                 alt="Power Auto ID showroom"
                 className="h-full w-full object-cover rounded-lg"
               />
@@ -127,19 +134,22 @@ export default function AboutPage() {
 
           <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             <img
-              src="https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&q=80"
+              src={showroomImage2}
               alt="Power Auto ID showroom"
               className="h-64 w-full rounded-lg object-cover"
+              loading="lazy"
             />
             <img
-              src="https://images.unsplash.com/photo-1527786356703-4b100091cd2c?auto=format&fit=crop&q=80"
+              src={showroomImage3}
               alt="Power Auto ID car collection"
               className="h-64 w-full rounded-lg object-cover"
+              loading="lazy"
             />
             <img
-              src="https://images.unsplash.com/photo-1570733577524-3a047079e80d?auto=format&fit=crop&q=80"
+              src={showroomImage4}
               alt="Power Auto ID office"
               className="h-64 w-full rounded-lg object-cover"
+              loading="lazy"
             />
           </div>
         </div>
