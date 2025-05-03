@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { Car } from '@/types/supabase'
 import { formatCurrency } from '@/lib/utils'
 import { optimizeImage } from '@/lib/image-utils'
-import { Car as CarIcon, Fuel, Calendar, Gauge } from 'lucide-react'
+import { Car as CarIcon, Fuel, Calendar, Gauge, Tag } from 'lucide-react'
 import {
   Card,
   CardContent,
@@ -46,8 +46,13 @@ export default function CarCard({ car }: CarCardProps) {
   // Format transmission
   const formattedTransmission = car.transmission === 'automatic' ? 'Otomatis' : 'Manual'
 
+  // Calculate discount percentage if market price exists
+  const discountPercentage = car.market_price && car.market_price > car.price
+    ? Math.round(((car.market_price - car.price) / car.market_price) * 100)
+    : 0
+
   return (
-    <Card className="group overflow-hidden transition-all duration-300 hover:shadow-lg">
+    <Card className="group flex h-full flex-col overflow-hidden transition-all duration-300 hover:shadow-lg">
       {/* Image container */}
       <div className="relative aspect-[16/9] w-full overflow-hidden bg-gray-200">
         <Link to={`/cars/${car.slug}`}>
@@ -64,6 +69,14 @@ export default function CarCard({ car }: CarCardProps) {
             />
           )}
         </Link>
+        
+        {/* Discount tag */}
+        {discountPercentage > 0 && !car.sold && (
+          <div className="absolute left-0 top-0 m-2 rounded-md bg-red-600 px-2 py-1 text-xs font-bold text-white">
+            {discountPercentage}% OFF
+          </div>
+        )}
+        
         {car.sold && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/50">
             <span className="transform rotate-12 bg-primary px-6 py-2 text-lg font-bold text-white">
@@ -73,28 +86,38 @@ export default function CarCard({ car }: CarCardProps) {
         )}
       </div>
 
-      <CardHeader className="px-4 pb-0 pt-4">
-        <div className="space-y-1">
+      <CardHeader className="flex-none px-4 pb-0 pt-4">
+        <div>
           <Link 
             to={`/cars/${car.slug}`}
-            className="line-clamp-1 block text-xl font-bold leading-tight hover:text-primary"
+            className="line-clamp-2 min-h-[3.5rem] block text-xl font-bold leading-tight hover:text-primary"
           >
             {car.year} {car.make} {car.model}
           </Link>
-          <div className="flex justify-between">
-            <span className="text-2xl font-bold text-primary">
-              {formatCurrency(car.price)}
-            </span>
-            {car.market_price && car.market_price > car.price && (
-              <span className="text-sm line-through text-gray-500">
-                {formatCurrency(car.market_price)}
-              </span>
-            )}
-          </div>
         </div>
       </CardHeader>
 
-      <CardContent className="px-4 py-2">
+      {/* Price section separated from title */}
+      <div className="flex-none px-4 py-2">
+        <div className="flex flex-col">
+          <div className="flex items-center gap-2">
+            <Tag className="h-5 w-5 text-primary" />
+            <div className="flex flex-col">
+              <span className="text-2xl font-bold text-primary">
+                {formatCurrency(car.price)}
+              </span>
+              
+              {car.market_price && car.market_price > car.price && (
+                <span className="text-sm line-through text-gray-500">
+                  {formatCurrency(car.market_price)}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <CardContent className="flex-grow px-4 pb-2 pt-0">
         <div className="grid grid-cols-2 gap-2">
           <div className="flex items-center text-sm">
             <CarIcon className="mr-1 h-4 w-4 text-gray-500" />
@@ -115,7 +138,7 @@ export default function CarCard({ car }: CarCardProps) {
         </div>
       </CardContent>
 
-      <CardFooter className="flex gap-2 px-4 pb-4">
+      <CardFooter className="flex-none flex gap-2 px-4 pb-4">
         <Button asChild className="flex-1">
           <Link to={`/cars/${car.slug}`}>
             Detail
