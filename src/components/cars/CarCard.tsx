@@ -1,6 +1,8 @@
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Car } from '@/types/supabase'
 import { formatCurrency } from '@/lib/utils'
+import { optimizeImage } from '@/lib/image-utils'
 import { Car as CarIcon, Fuel, Calendar, Gauge } from 'lucide-react'
 import {
   Card,
@@ -15,6 +17,24 @@ interface CarCardProps {
 }
 
 export default function CarCard({ car }: CarCardProps) {
+  const [imageSrc, setImageSrc] = useState<string>('')
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Preload and optimize image
+  useEffect(() => {
+    if (car.title_image) {
+      // Generate thumbnail for card view (smaller, optimized)
+      const optimizedImage = optimizeImage(car.title_image, 400, 225, 80)
+      setImageSrc(optimizedImage)
+      
+      // Preload larger image for better experience when navigating to detail page
+      const img = new Image()
+      img.src = optimizeImage(car.title_image, 800, 450)
+      
+      setIsLoading(false)
+    }
+  }, [car.title_image])
+
   // Translations for fuel types
   const fuelTypeMap = {
     gasoline: 'Bensin',
@@ -29,13 +49,20 @@ export default function CarCard({ car }: CarCardProps) {
   return (
     <Card className="group overflow-hidden transition-all duration-300 hover:shadow-lg">
       {/* Image container */}
-      <div className="relative aspect-[16/9] w-full overflow-hidden">
+      <div className="relative aspect-[16/9] w-full overflow-hidden bg-gray-200">
         <Link to={`/cars/${car.slug}`}>
-          <img
-            src={car.title_image}
-            alt={`${car.year} ${car.make} ${car.model}`}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-          />
+          {isLoading ? (
+            <div className="flex h-full w-full items-center justify-center">
+              <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-t-2 border-primary"></div>
+            </div>
+          ) : (
+            <img
+              src={imageSrc}
+              alt={`${car.year} ${car.make} ${car.model}`}
+              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              loading="lazy"
+            />
+          )}
         </Link>
         {car.sold && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/50">
