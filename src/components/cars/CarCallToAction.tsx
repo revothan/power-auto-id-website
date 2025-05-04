@@ -18,7 +18,7 @@ export default function CarCallToAction({ car }: CarCallToActionProps) {
   
   const contacts: ContactPerson[] = [
     { name: 'Alfi', number: '+62 811-8297-666' },
-    { name: 'Audy', number: '+62 882-9946-8838' },
+    { name: 'Audy', number: '+62 811 1260 1717' },
     { name: 'Jimmy', number: '+62 811-9288-855' }
   ]
 
