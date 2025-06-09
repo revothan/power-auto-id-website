@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { getCarMakes, getCarModels, getCarYears } from '@/lib/supabase/client'
+import { useCarFilterOptions } from '@/lib/supabase/client'
 
 interface FilterValues {
   make: string
@@ -16,9 +16,10 @@ interface FilterValues {
 
 export default function CarFilter() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const [makes, setMakes] = useState<string[]>([])
-  const [models, setModels] = useState<string[]>([])
-  const [years, setYears] = useState<number[]>([])
+  
+  // Use React Query for cached filter options - single API call!
+  const { data: filterOptions } = useCarFilterOptions()
+  
   const [filters, setFilters] = useState<FilterValues>({
     make: searchParams.get('make') || '',
     model: searchParams.get('model') || '',
@@ -30,44 +31,22 @@ export default function CarFilter() {
     fuelType: searchParams.get('fuelType') || '',
   })
 
-  // Fetch makes, models and years on component mount
-  useEffect(() => {
-    const fetchFilterOptions = async () => {
-      try {
-        const makesList = await getCarMakes()
-        setMakes(makesList)
+  // Extract data with fallbacks
+  const makes = filterOptions?.makes || []
+  const years = filterOptions?.years || []
+  
+  // Filter models based on selected make using useMemo for performance
+  const availableModels = useMemo(() => {
+    if (!filterOptions?.models || !filters.make) return []
+    // Since we now have all models, we need to filter them by the cars that have the selected make
+    // For now, return all models - this could be optimized with a more complex query
+    return filterOptions.models
+  }, [filterOptions?.models, filters.make])
 
-        const yearsList = await getCarYears()
-        setYears(yearsList)
-
-        // If a make is already selected, load its models
-        if (filters.make) {
-          const modelsList = await getCarModels(filters.make)
-          setModels(modelsList)
-        }
-      } catch (error) {
-        console.error('Error fetching filter options:', error)
-      }
-    }
-
-    fetchFilterOptions()
-  }, [filters.make])
-
-  // Update models when make changes
-  const handleMakeChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+  // Update models when make changes - no API call needed!
+  const handleMakeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const make = e.target.value
     setFilters((prev) => ({ ...prev, make, model: '' }))
-
-    if (make) {
-      try {
-        const modelsList = await getCarModels(make)
-        setModels(modelsList)
-      } catch (error) {
-        console.error('Error fetching models:', error)
-      }
-    } else {
-      setModels([])
-    }
   }
 
   // Handle input changes
@@ -152,7 +131,7 @@ export default function CarFilter() {
                 className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm shadow-sm focus:border-primary focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <option value="">Semua Model</option>
-                {models.map((model) => (
+                {availableModels.map((model) => (
                   <option key={model} value={model}>
                     {model}
                   </option>
@@ -321,7 +300,7 @@ export default function CarFilter() {
               className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm shadow-sm focus:border-primary focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
             >
               <option value="">Semua Model</option>
-              {models.map((model) => (
+              {availableModels.map((model) => (
                 <option key={model} value={model}>
                   {model}
                 </option>

@@ -16,7 +16,7 @@ export function optimizeImage(
   url: string,
   width: number,
   height?: number,
-  quality: number = 75,
+  quality: number = 50,
   resize: 'cover' | 'contain' | 'fill' = 'cover'
 ): string {
   // Return original URL if it's not a Supabase Storage URL
@@ -64,10 +64,10 @@ export function optimizeImage(
  */
 export function getResponsiveImageSources(url: string) {
   return {
-    thumbnail: optimizeImage(url, 200, 150),
-    small: optimizeImage(url, 400, 300),
-    medium: optimizeImage(url, 800, 600),
-    large: optimizeImage(url, 1200, 900),
+    thumbnail: optimizeImage(url, 200, 150, 40),
+    small: optimizeImage(url, 400, 300, 45),
+    medium: optimizeImage(url, 800, 600, 50),
+    large: optimizeImage(url, 1200, 900, 55),
     original: url
   };
 }

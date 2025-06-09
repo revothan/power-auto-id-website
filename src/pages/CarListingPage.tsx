@@ -1,8 +1,7 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Filter, ChevronLeft, ChevronRight } from 'lucide-react'
-import { getCars, checkSupabaseConnection } from '@/lib/supabase/client'
-import { Car } from '@/types/supabase'
+import { useCars, checkSupabaseConnection } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import CarCard from '@/components/cars/CarCard'
 import CarFilter from '@/components/cars/CarFilter'
@@ -12,11 +11,7 @@ const ITEMS_PER_PAGE = 9
 
 export default function CarListingPage() {
   const [searchParams] = useSearchParams()
-  const [cars, setCars] = useState<Car[]>([])
-  const [totalCars, setTotalCars] = useState(0)
   const [currentPage, setCurrentPage] = useState(0)
-  const [totalPages, setTotalPages] = useState(0)
-  const [isLoading, setIsLoading] = useState(true)
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [hasConnectionError, setHasConnectionError] = useState(false)
 
@@ -24,82 +19,69 @@ export default function CarListingPage() {
   useEffect(() => {
     const isConfigured = checkSupabaseConnection()
     setHasConnectionError(!isConfigured)
-    if (!isConfigured) {
-      setIsLoading(false)
-    }
   }, [])
 
-  // Parse filter parameters
-  const buildFilters = useCallback(() => {
-    const filters: Record<string, any> = {}
+  // Parse filter parameters with useMemo for better performance
+  const filters = useMemo(() => {
+    const filterObj: Record<string, any> = {}
     
     // Add make filter
     const make = searchParams.get('make')
-    if (make) filters.make = make
+    if (make) filterObj.make = make
     
     // Add model filter
     const model = searchParams.get('model')
-    if (model) filters.model = model
+    if (model) filterObj.model = model
     
     // Add year range
     const yearMin = searchParams.get('yearMin')
     const yearMax = searchParams.get('yearMax')
     if (yearMin || yearMax) {
-      filters.year = {}
-      if (yearMin) filters.year.min = parseInt(yearMin)
-      if (yearMax) filters.year.max = parseInt(yearMax)
+      filterObj.year = {}
+      if (yearMin) filterObj.year.min = parseInt(yearMin)
+      if (yearMax) filterObj.year.max = parseInt(yearMax)
     }
     
     // Add price range
     const priceMin = searchParams.get('priceMin')
     const priceMax = searchParams.get('priceMax')
     if (priceMin || priceMax) {
-      filters.price = {}
-      if (priceMin) filters.price.min = parseInt(priceMin)
-      if (priceMax) filters.price.max = parseInt(priceMax)
+      filterObj.price = {}
+      if (priceMin) filterObj.price.min = parseInt(priceMin)
+      if (priceMax) filterObj.price.max = parseInt(priceMax)
     }
     
     // Add transmission filter
     const transmission = searchParams.get('transmission')
-    if (transmission) filters.transmission = transmission
+    if (transmission) filterObj.transmission = transmission
     
     // Add fuel type filter
     const fuelType = searchParams.get('fuelType')
-    if (fuelType) filters.fuel_type = fuelType
+    if (fuelType) filterObj.fuel_type = fuelType
     
     // Only show available cars (not sold)
-    filters.sold = false
+    filterObj.sold = false
     
-    return filters
+    return filterObj
   }, [searchParams])
 
-  // Fetch cars
-  const fetchCars = useCallback(async () => {
-    if (hasConnectionError) return
+  // Use React Query for cached car data with automatic error handling
+  const { 
+    data: carData, 
+    isLoading, 
+    error 
+  } = useCars(
+    ITEMS_PER_PAGE, 
+    currentPage, 
+    filters, 
+    'created_at', 
+    'desc'
+  )
 
-    setIsLoading(true)
-    
-    try {
-      const filters = buildFilters()
-      const { data, count, totalPages: pages } = await getCars(ITEMS_PER_PAGE, currentPage, filters)
-      
-      setCars(data || [])
-      setTotalCars(count)
-      setTotalPages(pages)
-    } catch (error) {
-      console.error('Error fetching cars:', error)
-      setHasConnectionError(true)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [currentPage, buildFilters, hasConnectionError])
-
-  // Fetch cars when filters or page changes
-  useEffect(() => {
-    if (!hasConnectionError) {
-      fetchCars()
-    }
-  }, [fetchCars, hasConnectionError])
+  // Extract data with fallbacks
+  const cars = carData?.data || []
+  const totalCars = carData?.count || 0
+  const totalPages = carData?.totalPages || 0
 
   // Navigate to another page
   const goToPage = (page: number) => {
@@ -164,7 +146,7 @@ export default function CarListingPage() {
               {/* Results summary */}
               <div className="mb-4 flex items-center justify-between">
                 <p className="text-sm text-gray-600">
-                  Menampilkan {cars.length} dari {totalCars} mobil
+                  {isLoading ? 'Loading...' : `Menampilkan ${cars.length} dari ${totalCars} mobil`}
                 </p>
                 
                 {/* Sort dropdown (placeholder) */}
@@ -186,6 +168,11 @@ export default function CarListingPage() {
               {isLoading ? (
                 <div className="flex h-96 w-full items-center justify-center">
                   <div className="h-16 w-16 animate-spin rounded-full border-b-2 border-t-2 border-primary"></div>
+                </div>
+              ) : error ? (
+                <div className="flex h-96 w-full flex-col items-center justify-center rounded-lg border border-red-200 bg-red-50 p-8 text-center">
+                  <h3 className="mb-2 text-lg font-medium text-red-800">Error loading cars</h3>
+                  <p className="text-red-600">Please try again later.</p>
                 </div>
               ) : cars.length > 0 ? (
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">

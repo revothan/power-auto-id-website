@@ -1,8 +1,7 @@
-import { useState, useEffect } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useMemo } from 'react'
+import { useParams, Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
-import { getCars } from '@/lib/supabase/client'
-import { Car } from '@/types/supabase'
+import { useCars } from '@/lib/supabase/client'
 import { formatCurrency } from '@/lib/utils'
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -14,46 +13,29 @@ import CarCard from '@/components/cars/CarCard'
 
 export default function CarDetailPage() {
   const { slug } = useParams<{ slug: string }>()
-  const navigate = useNavigate()
-  const [car, setCar] = useState<Car | null>(null)
-  const [similarCars, setSimilarCars] = useState<Car[]>([])
-  const [isLoading, setIsLoading] = useState(true)
 
-  useEffect(() => {
-    const fetchCarDetails = async () => {
-      if (!slug) return
-      
-      setIsLoading(true)
-      
-      try {
-        // Fetch car details based on slug
-        const cars = await getCars(1, 0, { slug })
-        
-        if (cars.data && cars.data.length > 0) {
-          const carData = cars.data[0]
-          setCar(carData)
-          
-          // Fetch similar cars (same make, different model)
-          const { data: similarCarsData } = await getCars(3, 0, {
-            make: carData.make,
-            sold: false,
-            exclude_id: carData.id,
-          })
-          
-          setSimilarCars(similarCarsData || [])
-        } else {
-          // Car not found, redirect to 404
-          navigate('/not-found', { replace: true })
-        }
-      } catch (error) {
-        console.error('Error fetching car details:', error)
-      } finally {
-        setIsLoading(false)
-      }
+  // Use React Query to fetch car details with caching
+  const { data: carData, isLoading: carLoading } = useCars(1, 0, { slug })
+  
+  const car = useMemo(() => {
+    if (!carData?.data || carData.data.length === 0) {
+      return null
     }
-    
-    fetchCarDetails()
-  }, [slug, navigate])
+    return carData.data[0]
+  }, [carData])
+
+  // Use React Query to fetch similar cars only when we have car data
+  const similarFilters = car ? { make: car.make, sold: false, exclude_id: car.id } : {}
+  const { data: similarCarsData, isLoading: similarCarsLoading } = useCars(
+    3, 
+    0, 
+    similarFilters,
+    'created_at',
+    'desc'
+  )
+  
+  const similarCars = similarCarsData?.data || []
+  const isLoading = carLoading || (car && similarCarsLoading)
 
   // Loading state
   if (isLoading) {
@@ -148,7 +130,7 @@ export default function CarDetailPage() {
               <div className="mt-8 overflow-hidden rounded-lg bg-white p-6 shadow-sm">
                 <h2 className="mb-4 text-2xl font-bold">Deskripsi</h2>
                 <div className="prose prose-sm max-w-none text-gray-700">
-                  {car.description.split('\n').map((paragraph, index) => (
+                  {car.description.split('\n').map((paragraph: string, index: number) => (
                     <p key={index}>{paragraph}</p>
                   ))}
                 </div>

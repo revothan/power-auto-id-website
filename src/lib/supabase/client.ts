@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { Database } from '@/types/supabase'
+import { useQuery } from '@tanstack/react-query'
 
 // Get environment variables with fallbacks
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string || ''
@@ -126,29 +127,39 @@ export async function getTestimonials(limit = 10) {
   }
 }
 
-export async function getCarMakes() {
+// Optimized single API call to get all filter options at once
+export async function getCarFilterOptions() {
   if (!checkSupabaseConnection()) {
-    return []
+    return { makes: [], models: [], years: [] }
   }
 
   try {
     const { data, error } = await supabase!
       .from('cars')
-      .select('make')
+      .select('make, model, year')
       .order('make')
 
     if (error) {
-      console.error('Error fetching car makes:', error)
-      return []
+      console.error('Error fetching car filter options:', error)
+      return { makes: [], models: [], years: [] }
     }
 
-    // Get unique makes
-    const uniqueMakes = [...new Set(data.map(car => car.make))]
-    return uniqueMakes
+    // Extract unique values in a single pass
+    const makes = [...new Set(data.map(car => car.make))].sort()
+    const models = [...new Set(data.map(car => car.model))].sort()
+    const years = [...new Set(data.map(car => car.year))].sort((a, b) => b - a)
+
+    return { makes, models, years }
   } catch (error) {
-    console.error('Error fetching car makes:', error)
-    return []
+    console.error('Error fetching car filter options:', error)
+    return { makes: [], models: [], years: [] }
   }
+}
+
+// Keep individual functions for backward compatibility but mark as legacy
+export async function getCarMakes() {
+  const options = await getCarFilterOptions()
+  return options.makes
 }
 
 export async function getCarModels(make?: string) {
@@ -173,7 +184,6 @@ export async function getCarModels(make?: string) {
       return []
     }
 
-    // Get unique models
     const uniqueModels = [...new Set(data.map(car => car.model))]
     return uniqueModels
   } catch (error) {
@@ -183,26 +193,50 @@ export async function getCarModels(make?: string) {
 }
 
 export async function getCarYears() {
-  if (!checkSupabaseConnection()) {
-    return []
-  }
+  const options = await getCarFilterOptions()
+  return options.years
+}
 
-  try {
-    const { data, error } = await supabase!
-      .from('cars')
-      .select('year')
-      .order('year', { ascending: false })
+// React Query hooks for optimized data fetching with caching
+export function useCarFilterOptions() {
+  return useQuery({
+    queryKey: ['car-filter-options'],
+    queryFn: getCarFilterOptions,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+  })
+}
 
-    if (error) {
-      console.error('Error fetching car years:', error)
-      return []
-    }
+export function useCars(
+  limit = 10,
+  page = 0,
+  filters: Record<string, any> = {},
+  sortBy: string = 'created_at',
+  sortOrder: 'asc' | 'desc' = 'desc'
+) {
+  return useQuery({
+    queryKey: ['cars', limit, page, filters, sortBy, sortOrder],
+    queryFn: () => getCars(limit, page, filters, sortBy, sortOrder),
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    gcTime: 5 * 60 * 1000, // 5 minutes
+  })
+}
 
-    // Get unique years
-    const uniqueYears = [...new Set(data.map(car => car.year))]
-    return uniqueYears
-  } catch (error) {
-    console.error('Error fetching car years:', error)
-    return []
-  }
+export function useCarById(id: string) {
+  return useQuery({
+    queryKey: ['car', id],
+    queryFn: () => getCarById(id),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    enabled: !!id,
+  })
+}
+
+export function useTestimonials(limit = 10) {
+  return useQuery({
+    queryKey: ['testimonials', limit],
+    queryFn: () => getTestimonials(limit),
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 20 * 60 * 1000, // 20 minutes
+  })
 }
