@@ -1,8 +1,6 @@
-import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Car as CarIcon, Gauge, Award, ShieldCheck } from 'lucide-react'
-import { getCars } from '@/lib/supabase/client'
-import { Car as CarType } from '@/types/supabase'
+import { useCars } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import CarCard from '@/components/cars/CarCard'
 import TestimonialCarousel from '@/components/testimonials/TestimonialCarousel'
@@ -17,27 +15,9 @@ const testimonialImages = [
 ]
 
 export default function HomePage() {
-  const [featuredCars, setFeaturedCars] = useState<CarType[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      try {
-        setIsLoading(true)
-        
-        // Fetch featured cars
-        const { data: carsData } = await getCars(6, 0, { sold: false })
-        
-        setFeaturedCars(carsData || [])
-      } catch (error) {
-        console.error('Error fetching initial data:', error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchInitialData()
-  }, [])
+  // Use React Query for cached featured cars data
+  const { data: carData, isLoading } = useCars(6, 0, { sold: false })
+  const featuredCars = carData?.data || []
 
   return (
     <div className="min-h-screen">
