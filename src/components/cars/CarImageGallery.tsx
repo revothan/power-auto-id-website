@@ -31,11 +31,16 @@ export default function CarImageGallery({ images, title }: CarImageGalleryProps)
       
       setOptimizedImages(optimized)
       
-      // Preload the first image
+      // Preload the first image. Clear the spinner on either load OR error —
+      // a failed optimization URL shouldn't trap the gallery in a loading
+      // state (the original URL will still attempt to render via the <img>).
       const firstImg = new Image()
       firstImg.onload = () => {
         setIsLoading(false)
         setLoadedImages(prev => new Set(prev).add(0))
+      }
+      firstImg.onerror = () => {
+        setIsLoading(false)
       }
       firstImg.src = optimized[0].full
       
@@ -146,6 +151,14 @@ export default function CarImageGallery({ images, title }: CarImageGalleryProps)
             alt={`${title} - Gambar ${currentIndex + 1}`}
             className="aspect-[4/3] w-full cursor-pointer object-cover"
             onClick={() => setIsFullscreen(true)}
+            onError={(e) => {
+              // Fall back to the unoptimized public URL when the render-image
+              // transformation fails (e.g. transformations not enabled on the
+              // Supabase project).
+              const img = e.currentTarget
+              const original = optimizedImages[currentIndex]?.original || images[currentIndex]
+              if (original && img.src !== original) img.src = original
+            }}
           />
         )}
         

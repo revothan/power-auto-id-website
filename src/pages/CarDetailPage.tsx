@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { useCars } from '@/lib/supabase/client'
 import { formatCurrency } from '@/lib/utils'
+import { resolveCarCoverUrl, resolveCarImageUrls } from '@/lib/image-utils'
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import CarImageGallery from '@/components/cars/CarImageGallery'
@@ -51,6 +52,11 @@ export default function CarDetailPage() {
     return null // Will redirect to 404
   }
 
+  // Resolve gallery + cover from car_images (with legacy fallback) once
+  const galleryImages = resolveCarImageUrls(car)
+  const coverUrl = resolveCarCoverUrl(car)
+  const isReserved = car.status === 'reserved'
+
   // Meta title and description
   const metaTitle = `${car.year} ${car.make} ${car.model} | Power Auto ID`
   const metaDescription = `Beli ${car.year} ${car.make} ${car.model} bekas berkualitas dengan harga ${formatCurrency(car.price)}. ${car.transmission === 'automatic' ? 'Transmisi Otomatis' : 'Transmisi Manual'}, Bahan Bakar ${car.fuel_type}, Kilometer ${car.mileage.toLocaleString()}.`
@@ -62,14 +68,14 @@ export default function CarDetailPage() {
         <meta name="description" content={metaDescription} />
         <meta property="og:title" content={metaTitle} />
         <meta property="og:description" content={metaDescription} />
-        <meta property="og:image" content={car.title_image} />
+        <meta property="og:image" content={coverUrl} />
         <meta property="og:type" content="product" />
         <meta property="og:site_name" content="Power Auto ID" />
         <meta property="og:locale" content="id_ID" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={metaTitle} />
         <meta name="twitter:description" content={metaDescription} />
-        <meta name="twitter:image" content={car.title_image} />
+        <meta name="twitter:image" content={coverUrl} />
       </Helmet>
 
       <div className="bg-gray-50 py-8 sm:py-12">
@@ -106,6 +112,12 @@ export default function CarDetailPage() {
                 </div>
               )}
 
+              {isReserved && (
+                <div className="rounded-md bg-sky-100 px-2.5 py-0.5 text-sm font-medium text-sky-700">
+                  Reserved
+                </div>
+              )}
+
               {car.sold && (
                 <div className="rounded-md bg-yellow-100 px-2.5 py-0.5 text-sm font-medium text-yellow-800">
                   Terjual
@@ -120,9 +132,9 @@ export default function CarDetailPage() {
             <div className="lg:col-span-2">
               {/* Car images */}
               <div className="overflow-hidden rounded-lg bg-white p-4 shadow-sm">
-                <CarImageGallery 
-                  images={car.images} 
-                  title={`${car.year} ${car.make} ${car.model}`} 
+                <CarImageGallery
+                  images={galleryImages}
+                  title={`${car.year} ${car.make} ${car.model}`}
                 />
               </div>
 
@@ -159,6 +171,19 @@ export default function CarDetailPage() {
                 <CarCallToAction car={car} />
               </div>
               
+              {/* Reserved notice */}
+              {isReserved && !car.sold && (
+                <div className="mb-4 rounded-lg border-2 border-sky-300 bg-sky-50 p-4 text-center">
+                  <h3 className="mb-1 text-base font-semibold text-sky-800">
+                    Sedang Direservasi
+                  </h3>
+                  <p className="text-sm text-sky-700">
+                    Mobil ini sedang dalam proses transaksi. Hubungi tim kami untuk
+                    konfirmasi ketersediaan.
+                  </p>
+                </div>
+              )}
+
               {/* Sold notice */}
               {car.sold && (
                 <div className="mb-4 rounded-lg border-2 border-yellow-400 bg-yellow-50 p-4 text-center">

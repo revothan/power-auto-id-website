@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Car } from '@/types/supabase'
 import { formatCurrency } from '@/lib/utils'
-import { optimizeImage } from '@/lib/image-utils'
+import { optimizeImage, resolveCarCoverUrl } from '@/lib/image-utils'
 import { Car as CarIcon, Fuel, Calendar, Gauge, Tag } from 'lucide-react'
 import {
   Card,
@@ -20,20 +20,17 @@ export default function CarCard({ car }: CarCardProps) {
   const [imageSrc, setImageSrc] = useState<string>('')
   const [isLoading, setIsLoading] = useState(true)
 
-  // Preload and optimize image
+  // Preload and optimize image — prefer car_images cover, fall back to legacy title_image.
+  const coverUrl = resolveCarCoverUrl(car)
   useEffect(() => {
-    if (car.title_image) {
-      // Generate thumbnail for card view (smaller, optimized)
-      const optimizedImage = optimizeImage(car.title_image, 400, 225, 80)
-      setImageSrc(optimizedImage)
-      
-      // Preload larger image for better experience when navigating to detail page
+    if (coverUrl) {
+      setImageSrc(optimizeImage(coverUrl, 400, 225, 80))
+      // Warm the detail-page-size image so navigation feels snappier
       const img = new Image()
-      img.src = optimizeImage(car.title_image, 800, 450)
-      
+      img.src = optimizeImage(coverUrl, 800, 450)
       setIsLoading(false)
     }
-  }, [car.title_image])
+  }, [coverUrl])
 
   // Translations for fuel types
   const fuelTypeMap = {
@@ -77,6 +74,12 @@ export default function CarCard({ car }: CarCardProps) {
           </div>
         )}
         
+        {car.status === 'reserved' && !car.sold && (
+          <div className="absolute right-0 top-0 m-2 rounded-md bg-sky-600 px-2 py-1 text-xs font-bold text-white">
+            RESERVED
+          </div>
+        )}
+
         {car.sold && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/50">
             <span className="transform rotate-12 bg-primary px-6 py-2 text-lg font-bold text-white">
@@ -144,11 +147,19 @@ export default function CarCard({ car }: CarCardProps) {
             Detail
           </Link>
         </Button>
-        <Button 
-          asChild 
+        <Button
+          asChild
           className="flex-1 bg-green-600 hover:bg-green-700"
         >
-          <a href={`https://wa.me/628119288855?text=Halo,%20saya%20tertarik%20dengan%20${car.year}%20${car.make}%20${car.model}`} target="_blank" rel="noopener noreferrer">
+          <a
+            href={(() => {
+              // Prefer the listing's sales PIC; fall back to the showroom default.
+              const raw = car.sales_pic?.phone?.replace(/\s|-|\+/g, '') || '628119288855'
+              return `https://wa.me/${raw}?text=Halo,%20saya%20tertarik%20dengan%20${car.year}%20${car.make}%20${car.model}`
+            })()}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             WhatsApp
           </a>
         </Button>

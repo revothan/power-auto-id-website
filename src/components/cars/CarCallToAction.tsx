@@ -13,14 +13,25 @@ type ContactPerson = {
   number: string
 }
 
+// Fallback contact list when the listing has no assigned sales PIC with a phone
+// number (legacy listings predate the dashboard PIC assignment).
+const FALLBACK_CONTACTS: ContactPerson[] = [
+  { name: 'Alfi', number: '+62 811-8297-666' },
+  { name: 'Audy', number: '+62 811 1260 1717' },
+  { name: 'Jimmy', number: '+62 811-9288-855' },
+]
+
 export default function CarCallToAction({ car }: CarCallToActionProps) {
   const [isWhatsAppOpen, setIsWhatsAppOpen] = useState(false)
-  
-  const contacts: ContactPerson[] = [
-    { name: 'Alfi', number: '+62 811-8297-666' },
-    { name: 'Audy', number: '+62 811 1260 1717' },
-    { name: 'Jimmy', number: '+62 811-9288-855' }
-  ]
+
+  const picName = car.sales_pic?.full_name?.trim() || null
+  const picPhone = car.sales_pic?.phone?.trim() || null
+
+  // If the listing has a real PIC, that's the only contact shown. Otherwise
+  // fall back to the showroom-wide rotation.
+  const contacts: ContactPerson[] = picPhone
+    ? [{ name: picName ?? 'PIC', number: picPhone }]
+    : FALLBACK_CONTACTS
 
   const whatsappMessage = `Halo, saya tertarik dengan ${car.year} ${car.make} ${car.model} yang dijual di website Anda. Boleh minta informasi lebih lanjut?`
   
