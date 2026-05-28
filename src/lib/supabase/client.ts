@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import { Database } from '@/types/supabase'
+import { Car, Database } from '@/types/supabase'
 import { useQuery } from '@tanstack/react-query'
 
 // Get environment variables with fallbacks
@@ -36,7 +36,15 @@ export async function getCars(
 
   let query = supabase!
     .from('cars')
-    .select('*', { count: 'exact' })
+    .select(
+      `
+        *,
+        car_images ( storage_path, sort_order, is_cover ),
+        sales_pic:profiles!cars_sales_pic_id_fkey ( full_name, phone )
+      `,
+      { count: 'exact' },
+    )
+    .in('status', ['available', 'reserved'])
     .order(sortBy, { ascending: sortOrder === 'asc' })
     .range(page * limit, (page + 1) * limit - 1)
 
@@ -68,14 +76,15 @@ export async function getCars(
       return { data: [], count: 0, totalPages: 0 }
     }
 
-    return { 
-      data: data || [], 
-      count: count || 0, 
-      totalPages: count ? Math.ceil(count / limit) : 0 
+    return {
+      // Filtered to status='available' above, which guarantees required fields are populated.
+      data: (data ?? []) as unknown as Car[],
+      count: count || 0,
+      totalPages: count ? Math.ceil(count / limit) : 0
     }
   } catch (error) {
     console.error('Error fetching cars:', error)
-    return { data: [], count: 0, totalPages: 0 }
+    return { data: [] as Car[], count: 0, totalPages: 0 }
   }
 }
 
@@ -87,8 +96,15 @@ export async function getCarById(id: string) {
   try {
     const { data, error } = await supabase!
       .from('cars')
-      .select('*')
+      .select(
+        `
+          *,
+          car_images ( storage_path, sort_order, is_cover ),
+          sales_pic:profiles!cars_sales_pic_id_fkey ( full_name, phone )
+        `,
+      )
       .eq('id', id)
+      .in('status', ['available', 'reserved'])
       .single()
 
     if (error) {
@@ -96,7 +112,7 @@ export async function getCarById(id: string) {
       return null
     }
 
-    return data
+    return data as unknown as Car
   } catch (error) {
     console.error('Error fetching car:', error)
     return null
@@ -137,6 +153,7 @@ export async function getCarFilterOptions() {
     const { data, error } = await supabase!
       .from('cars')
       .select('make, model, year')
+      .in('status', ['available', 'reserved'])
       .order('make')
 
     if (error) {
@@ -144,10 +161,11 @@ export async function getCarFilterOptions() {
       return { makes: [], models: [], years: [] }
     }
 
-    // Extract unique values in a single pass
-    const makes = [...new Set(data.map(car => car.make))].sort()
-    const models = [...new Set(data.map(car => car.model))].sort()
-    const years = [...new Set(data.map(car => car.year))].sort((a, b) => b - a)
+    // status='available' rows are guaranteed to have make/model/year populated,
+    // but the row type is still nullable — filter out anything stray.
+    const makes = [...new Set(data.map(c => c.make).filter((v): v is string => v != null))].sort()
+    const models = [...new Set(data.map(c => c.model).filter((v): v is string => v != null))].sort()
+    const years = [...new Set(data.map(c => c.year).filter((v): v is number => v != null))].sort((a, b) => b - a)
 
     return { makes, models, years }
   } catch (error) {
@@ -171,6 +189,7 @@ export async function getCarModels(make?: string) {
     let query = supabase!
       .from('cars')
       .select('model')
+      .in('status', ['available', 'reserved'])
       .order('model')
 
     if (make) {
@@ -184,7 +203,7 @@ export async function getCarModels(make?: string) {
       return []
     }
 
-    const uniqueModels = [...new Set(data.map(car => car.model))]
+    const uniqueModels = [...new Set(data.map(c => c.model).filter((v): v is string => v != null))]
     return uniqueModels
   } catch (error) {
     console.error('Error fetching car models:', error)

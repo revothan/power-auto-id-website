@@ -16,6 +16,13 @@ dist-ssr
 .env.development
 .env.production
 
+# MCP config contains access token
+.mcp.json
+
+# Playwright MCP test artifacts (screenshots, console logs)
+.playwright-mcp/
+phase*.png
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

@@ -74,7 +74,7 @@ export function getResponsiveImageSources(url: string) {
 
 /**
  * Preload an image to improve perceived loading time
- * 
+ *
  * @param url The image URL to preload
  */
 export function preloadImage(url: string): Promise<void> {
@@ -84,4 +84,53 @@ export function preloadImage(url: string): Promise<void> {
     img.onerror = (e) => reject(e);
     img.src = url;
   });
+}
+
+import { supabase } from './supabase/client';
+import type { Car } from '@/types/supabase';
+
+interface ImageLike {
+  storage_path: string;
+  sort_order: number;
+  is_cover: boolean;
+}
+
+/**
+ * Build the public URL for a path in the car-images bucket.
+ */
+export function carImageUrl(storagePath: string): string {
+  if (!supabase) return '';
+  return supabase.storage.from('car-images').getPublicUrl(storagePath).data.publicUrl;
+}
+
+/**
+ * Returns all gallery image URLs for a car, sorted by `sort_order` with the
+ * cover first. Falls back to the legacy `car.images[]` array when no
+ * `car_images` rows exist (so existing listings keep working through Phase 7).
+ */
+export function resolveCarImageUrls(car: Car): string[] {
+  const rows = car.car_images ?? [];
+  if (rows.length > 0) {
+    const sorted = [...rows].sort((a, b) => {
+      if (a.is_cover !== b.is_cover) return a.is_cover ? -1 : 1;
+      return a.sort_order - b.sort_order;
+    });
+    return sorted.map((r) => carImageUrl(r.storage_path));
+  }
+  return car.images ?? [];
+}
+
+/**
+ * Returns the single cover URL for a car, preferring car_images then falling
+ * back to the legacy `title_image`.
+ */
+export function resolveCarCoverUrl(car: Car): string {
+  const rows = car.car_images ?? [];
+  const cover = rows.find((r) => r.is_cover) ?? rows[0];
+  if (cover) return carImageUrl(cover.storage_path);
+  return car.title_image || (car.images?.[0] ?? '');
+}
+
+export function _coverFromList(rows: ImageLike[]): ImageLike | undefined {
+  return rows.find((r) => r.is_cover) ?? rows[0];
 }
