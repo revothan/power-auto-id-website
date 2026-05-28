@@ -1,10 +1,10 @@
 # Panduan Pengguna — Dashboard Power Auto
 
-Dashboard internal Power Auto untuk mengelola listing mobil yang tayang di [powerautoid.com](https://powerautoid.com).
+Dashboard internal Power Auto untuk mengelola listing mobil yang tayang di [powerauto.id](https://powerauto.id).
 
 ## Login
 
-1. Buka `https://powerautoid.com/login` (atau URL yang diberikan admin).
+1. Buka `https://powerauto.id/login` (atau URL yang diberikan admin).
 2. Masukkan email + password akun staff.
 3. Lupa password? Klik **Lupa password?** — sistem akan kirim link reset ke email kamu.
 

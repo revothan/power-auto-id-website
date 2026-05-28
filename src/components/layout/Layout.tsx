@@ -33,7 +33,7 @@ export default function Layout({
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={metaTitle} />
         <meta name="twitter:description" content={metaDescription} />
-        <link rel="canonical" href="https://powerautoid.com" />
+        <link rel="canonical" href="https://powerauto.id" />
       </Helmet>
 
       <div className="flex min-h-screen flex-col">
