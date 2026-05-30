@@ -61,19 +61,18 @@ export default function CarEditorPage() {
     },
   })
 
-  const photosQuery = useQuery({
-    queryKey: ['car-photos-count', id],
-    enabled: !!id && !!supabase,
-    queryFn: async () => {
-      if (!supabase || !id) return 0
-      const { count, error } = await supabase
-        .from('car_images')
-        .select('id', { count: 'exact', head: true })
-        .eq('car_id', id)
-      if (error) return 0
-      return count ?? 0
-    },
-  })
+  // Photo count is checked freshly at submit time (see runTransition) — we
+  // don't cache it here because the cached value goes stale the moment the
+  // user uploads in PhotosStep, and the count is a hard gate on submit.
+  const countCarPhotos = async (): Promise<number> => {
+    if (!supabase || !id) return 0
+    const { count, error } = await supabase
+      .from('car_images')
+      .select('id', { count: 'exact', head: true })
+      .eq('car_id', id)
+    if (error) return 0
+    return count ?? 0
+  }
 
   const form = useForm<ListingFormValues>({
     resolver: zodResolver(listingDraftSchema),
@@ -137,7 +136,6 @@ export default function CarEditorPage() {
   }, [id, form, triggerAutosave])
 
   const car = carQuery.data
-  const photoCount = photosQuery.data ?? 0
   const status: CarStatus | undefined = car?.status
 
   const stepNode = useMemo(() => {
@@ -224,10 +222,13 @@ export default function CarEditorPage() {
         return
       }
     }
-    if (t.requiresPhoto && photoCount < 1) {
-      setStep(4)
-      setSubmitError('Tambahkan minimal satu foto sebelum melanjutkan.')
-      return
+    if (t.requiresPhoto) {
+      const freshCount = await countCarPhotos()
+      if (freshCount < 1) {
+        setStep(4)
+        setSubmitError('Tambahkan minimal satu foto sebelum melanjutkan.')
+        return
+      }
     }
 
     const payload: Record<string, unknown> = { ...values, status: t.next }

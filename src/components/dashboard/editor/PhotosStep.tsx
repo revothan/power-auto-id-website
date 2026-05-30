@@ -137,6 +137,9 @@ export function PhotosStep({ carId }: Props) {
           <p className="text-xs text-muted-foreground">
             {photos.length}/{MAX_PHOTOS} foto • klik bintang untuk set cover.
           </p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            Format: JPG, PNG, atau WebP. HEIC dari iPhone tidak didukung — convert dulu ke JPG.
+          </p>
         </div>
         <Button
           type="button"
@@ -154,7 +157,7 @@ export function PhotosStep({ carId }: Props) {
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*"
+          accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
           multiple
           className="hidden"
           onChange={(e) => onFiles(e.target.files)}

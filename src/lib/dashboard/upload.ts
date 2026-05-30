@@ -19,6 +19,21 @@ export async function resizeImage(file: File): Promise<ResizedImage> {
     throw new Error('File bukan gambar.')
   }
 
+  // HEIC / HEIF — iPhone default. Most desktop browsers (Chrome, Firefox,
+  // Edge on Windows) can't decode it, so the upload would silently fail
+  // with "Gagal memuat gambar". Give a specific actionable error instead.
+  const lower = file.name.toLowerCase()
+  if (
+    file.type === 'image/heic' ||
+    file.type === 'image/heif' ||
+    lower.endsWith('.heic') ||
+    lower.endsWith('.heif')
+  ) {
+    throw new Error(
+      'Format HEIC dari iPhone belum didukung. Di iPhone, buka Settings → Camera → Formats → pilih "Most Compatible" agar foto tersimpan sebagai JPG. Atau convert foto HEIC ke JPG dulu sebelum upload.',
+    )
+  }
+
   const dataUrl = await new Promise<string>((resolve, reject) => {
     const reader = new FileReader()
     reader.onload = () => resolve(reader.result as string)
@@ -29,7 +44,12 @@ export async function resizeImage(file: File): Promise<ResizedImage> {
   const img = await new Promise<HTMLImageElement>((resolve, reject) => {
     const el = new Image()
     el.onload = () => resolve(el)
-    el.onerror = () => reject(new Error('Gagal memuat gambar.'))
+    el.onerror = () =>
+      reject(
+        new Error(
+          'Browser tidak bisa membaca format foto ini. Coba upload format JPG, PNG, atau WebP.',
+        ),
+      )
     el.src = dataUrl
   })
 
