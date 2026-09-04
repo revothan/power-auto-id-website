@@ -40,7 +40,7 @@ export default function Header() {
             <span className="sr-only">Power Auto ID</span>
             <img
               className="h-12 w-auto"
-              src="https://cfwrwtgwdljhdqgpwzip.supabase.co/storage/v1/object/public/branding//logo.png"
+              src="/logo.png"
               alt="Power Auto ID Logo"
             />
           </Link>
@@ -99,7 +99,7 @@ export default function Header() {
                 <span className="sr-only">Power Auto ID</span>
                 <img
                   className="h-8 w-auto"
-                  src="https://cfwrwtgwdljhdqgpwzip.supabase.co/storage/v1/object/public/branding//logo.png"
+                  src="/logo.png"
                   alt="Power Auto ID Logo"
                 />
               </Link>
