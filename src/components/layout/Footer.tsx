@@ -42,7 +42,7 @@ export default function Footer() {
               <span className="sr-only">Power Auto ID</span>
               <img
                 className="h-14 w-auto"
-                src="https://cfwrwtgwdljhdqgpwzip.supabase.co/storage/v1/object/public/branding//logo.png"
+                src="/logo-white.png"
                 alt="Power Auto ID Logo"
               />
             </Link>
